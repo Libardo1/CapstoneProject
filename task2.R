@@ -132,7 +132,7 @@ frequentWords <- wordsTable[ wordsTable$freq >= MIN_WORD_FREQUENCY, ];
 
 # calculate the relative cumulative sum of the word frequencies
 
-cumulativeSum <- cumsum(wordsTable);
+cumulativeSum <- cumsum(wordsTable$freq);
 cumulativeSum <- cumulativeSum/length(wordsList);
 rm(wordsList);
 
@@ -162,6 +162,7 @@ fourGramsPasted <- table(fourGramsPasted);
 
 # order the multigrams by frequency
 
+cat("order the full data and save it to the hard drive...\n");
 twoGramsPasted <- twoGramsPasted[ order(twoGramsPasted, decreasing=TRUE) ];
 threeGramsPasted <- threeGramsPasted[ order(threeGramsPasted, decreasing=TRUE) ];
 fourGramsPasted <- fourGramsPasted[ order(fourGramsPasted, decreasing=TRUE) ];
@@ -204,6 +205,17 @@ frequentWords <- frequentWords[ order(frequentWords$freq, decreasing=TRUE), ];
 twoGramsDistr <- twoGramsDistr[ order(twoGramsDistr$freq, decreasing=TRUE), ];
 threeGramsDistr <- threeGramsDistr[ order(threeGramsDistr$freq, decreasing=TRUE), ];
 fourGramsDistr <- fourGramsDistr[ order(fourGramsDistr$freq, decreasing=TRUE), ];
+
+
+# filter the n-grams for elements with identical elements 1-(n-1) and only keep the first (i.e. most frequent
+# or alphabetically first) one...
+
+twoGramsDistr <- twoGramsDistr[match(unique(twoGramsDistr$word1), twoGramsDistr$word1), ];
+temp <- paste(threeGramsDistr[,1], threeGramsDistr[,2], sep=" ");
+threeGramsDistr <- threeGramsDistr[match(unique(temp), temp), ];
+temp <- paste(fourGramsDistr[,1], fourGramsDistr[,2], fourGramsDistr[,3], sep=" ");
+fourGramsDistr <- fourGramsDistr[match(unique(temp), temp), ];
+rm(temp);
 
 
 # # plot the distribution of the most frequent two- and threegrams
