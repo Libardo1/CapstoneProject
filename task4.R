@@ -2,6 +2,6 @@
 
 source("predictNextWord.R");
 
-INPUT_STRING <- "If this isn't the cutest thing you've ever seen, then you must be";
+INPUT_STRING <- "i'll be on my";
 
 predictNextWord(INPUT_STRING);
