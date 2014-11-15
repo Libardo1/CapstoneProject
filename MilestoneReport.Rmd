@@ -1,0 +1,126 @@
+---
+title: "Data Science Capstone Project Milestone Report"
+author: "bursi"
+date: "Saturday, November 15, 2014"
+output: html_document
+---
+
+This document is the "Milestone Report" for the Capstone Project of the "Data Science Specialization" on Coursera. The goal of the project is to build a simple tool in R to predict the "next word" based on a sequence of words. To do so, an extensive data set is provided on which a model for word prediction has to be developed. 
+In this report, the initial approach to the task and some statistical summary of the data set is presented. 
+
+## Loading the data
+
+The data set provided for the task consists of three .txt files containing text from newspaper articles, blogs and twitter. The entire set (in English language) has a size of more than 500 MB. 
+In order to load the data into R, the "tm" package has found to be quite useful. 
+
+```{r, echo=TRUE, cache=TRUE, message=FALSE}
+library(tm);
+source("simpleTokenization.R");
+```
+
+```{r, echo=TRUE, cache=TRUE}
+newsSource <- DirSource(directory="en_US/", pattern="news", mode="text", ignore.case=FALSE);
+newsCorpus <- VCorpus(newsSource);
+# (analogously for the other data sets)
+```
+
+```{r, echo=FALSE, cache=TRUE}
+blogsSource <- DirSource(directory="en_US/", pattern="blogs", mode="text", ignore.case=FALSE);
+blogsCorpus <- VCorpus(blogsSource);
+
+twitterSource <- DirSource(directory="en_US/", pattern="twitter", mode="text", ignore.case=FALSE);
+twitterCorpus <- VCorpus(twitterSource);
+```
+
+```{r, echo=FALSE, cache=FALSE}
+temp <- data.frame(news=length(newsCorpus[[1]]$content), blogs=length(blogsCorpus[[1]]$content), twitter=length(twitterCorpus[[1]]$content));
+rownames(temp) <- "number of text junks per data set:  ";
+print(temp);
+rm(temp);
+```
+
+As can be seen, all three data sets contain thousands of elements, the twitter set even more than two million.
+
+An example of the text junks in the newspaper data set is shown below:
+
+```{r, echo=FALSE, cache=FALSE}
+print(newsCorpus[[1]]$content[1:3]);
+```
+
+
+## Basic processing and summary
+
+To process the raw input text, a function "simpleTokenization" has been written (which can be found on <https://github.com/bursi/CapstoneProject>). This function filters numbers and special characters from the raw input text and splits the text into sentences and clauses. Since the entire data set has a considerable size, only 100'000 elements of each original set are considered for this report. 
+
+```{r, echo=TRUE, cache=TRUE}
+newsTokenization <- simpleTokenization(newsCorpus, maxElements=100000);
+# (analogously for the other data sets)
+```
+
+```{r, echo=FALSE, cache=TRUE}
+blogsTokenization <- simpleTokenization(blogsCorpus, maxElements=100000);
+twitterTokenization <- simpleTokenization(twitterCorpus, maxElements=100000);
+```
+
+A list of all the words in each of these data sets can be obtained e.g. by splitting the text elements by whitespaces, resulting in the following number of words per data set:
+
+```{r, echo=TRUE, cache=TRUE}
+newsWordsList <- unlist( strsplit(newsTokenization, split=" ") );
+newsWordsList <- newsWordsList[ newsWordsList != "" ];
+# (analogously for the other data sets)
+```
+
+```{r, echo=FALSE, cache=TRUE}
+blogsWordsList <- unlist( strsplit(blogsTokenization, split=" ") );
+blogsWordsList <- blogsWordsList[ blogsWordsList != "" ];
+
+twitterWordsList <- unlist( strsplit(twitterTokenization, split=" ") );
+twitterWordsList <- twitterWordsList[ twitterWordsList != "" ];
+```
+
+```{r, echo=FALSE, cache=FALSE}
+temp <- data.frame(news=length(newsWordsList), blogs=length(blogsWordsList), twitter=length(twitterWordsList));
+rownames(temp) <- "number of words per data set:  ";
+print(temp);
+rm(temp);
+```
+
+For each of the data sets, the subsets of 100'000 elements cointain more than one million words. 
+
+What may be interesting is the distribution of the frequencies of e.g. the 100 most frequent words in each of these lists:
+
+```{r, echo=TRUE, cache=TRUE}
+newsWordsTable <- table(newsWordsList);
+newsWordsTable <- sort(newsWordsTable, decreasing=TRUE)[1:100];
+# (analogously for the other data sets)
+```
+
+```{r, echo=FALSE, cache=TRUE}
+blogsWordsTable <- table(blogsWordsList);
+blogsWordsTable <- sort(blogsWordsTable, decreasing=TRUE)[1:100];
+
+twitterWordsTable <- table(twitterWordsList);
+twitterWordsTable <- sort(twitterWordsTable, decreasing=TRUE)[1:100];
+```
+
+```{r, echo=FALSE, cache=FALSE}
+par(mfrow=c(1,3));
+plot(100*newsWordsTable[1:100]/length(newsWordsList), log="y", xlab="words ordered by frequency", ylab="relative frequency (%)", xaxt="n", 
+     cex=0.5, main="newspaper articles", pch=20);
+
+plot(100*blogsWordsTable[1:100]/length(blogsWordsList), log="y", xlab="words ordered by frequency", ylab="relative frequency (%)", xaxt="n", 
+     cex=0.5, main="online blogs", pch=20);
+
+plot(100*twitterWordsTable[1:100]/length(twitterWordsList), log="y", xlab="words ordered by frequency", ylab="relative frequency (%)", xaxt="n", 
+     cex=0.5, main="tweets", pch=20);
+par(mfrow=c(1,1));
+```
+
+It is remarkable to note that in all of the data sets, several single words each contribute more than one percent of the total text themselves. 
+
+## Plan for creating a prediction model
+
+For creating a model to predict "the next word" based on this data, I plan to extract lists of frequent n-grams (i.e. sequences of n words) and use them to predict the next word based on a sequence of the last few words of a given input text. 
+
+
+
