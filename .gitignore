@@ -1,4 +1,6 @@
 *.zip
+*.RData
+*.Rproj
 
 
 # Windows image file caches
@@ -44,3 +46,4 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+.Rproj.user
