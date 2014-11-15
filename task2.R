@@ -5,6 +5,10 @@ library(plyr);
 source("simpleTokenization.R");
 source("multiGrams.R");
 
+# define global variables for the maximum number of corpus elements and extracted strings to be used per data source
+
+MAX_CORPUS_ELEMENTS <- 500000;
+MAX_STRINGS <- 1000000;
 
 # define global variables for the minimum frequency of words and n-grams to be taken into account
 
@@ -43,11 +47,14 @@ for (i in 1:length(filesList))
     dataCorpus <- VCorpus(dataSource);
     rm(dataSource);
     
-    # tokenize the input corpus
+    # tokenize the input corpus, limiting the number of input elements to 500'000
     
     cat("tokenizing text...\n");
-    tokenizedText <- simpleTokenization(dataCorpus);
+    tokenizedText <- simpleTokenization(dataCorpus, maxElements=MAX_CORPUS_ELEMENTS);
     
+    # limit the number of strings from the tokenized text (elements correspond roughly to (partial) sentences)
+    
+    tokenizedText <- tokenizedText[1:min(MAX_STRINGS, length(tokenizedText))];
     
     # profanity filtering
     
@@ -66,6 +73,7 @@ for (i in 1:length(filesList))
     # get a list of words (to be used for guessing words e.g. at the start of a sentence or after words
     # with no frequent combination)
     
+    cat("determine the distribution of the words...\n");
     wordsList <- unlist( strsplit(tokenizedText, split=" ") );
     wordsList <- wordsList[ wordsList != "" ];
     

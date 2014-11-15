@@ -2,8 +2,11 @@
 
 library(tm);
 
-simpleTokenization <- function(inputCorpus)
+simpleTokenization <- function(inputCorpus, maxElements=500000)
 {
+    # limit the number of input elements from the corpus to maxElements
+    
+    inputCorpus[[1]]$content <- inputCorpus[[1]]$content[1:min(maxElements, length(inputCorpus[[1]]$content))];
     
     # remove all weird characters
     
