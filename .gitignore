@@ -1,6 +1,7 @@
 *.zip
 *.RData
 *.Rproj
+*.Rhistory
 
 
 # Windows image file caches
