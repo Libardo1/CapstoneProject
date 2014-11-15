@@ -1,30 +1,20 @@
-# function to tokenize an input text corpus
-
-library(tm);
+# function to tokenize an input text corpus (from the tm package)
 
 simpleTokenization <- function(inputCorpus, maxElements=500000)
 {
-    # limit the number of input elements from the corpus to maxElements
+    # extract only the character vector of the corpus to increase computational speed and limit the number of elements
     
-    inputCorpus[[1]]$content <- inputCorpus[[1]]$content[1:min(maxElements, length(inputCorpus[[1]]$content))];
+    inputText <- inputCorpus[[1]]$content[1:min(maxElements, length(inputCorpus[[1]]$content))];
     
-    # remove all weird characters
+    # remove all weird characters and numbers
     
-    inputCorpus[[1]]$content <- iconv(inputCorpus[[1]]$content, "latin1", "ASCII", sub=" ");
-    inputCorpus[[1]]$content <- gsub("[^[:alnum:][:space:][:punct:]]", "", inputCorpus[[1]]$content);
+    inputText <- iconv(inputText, "latin1", "ASCII", sub=" ");
+    inputText <- gsub("[^[:alpha:][:space:][:punct:]]", "", inputText);
     
+    # transform the text to lower case and replace multiple whitespaces by one
     
-    # transform the news corpus for further processing
-    
-    inputCorpus <- tm_map(inputCorpus, stripWhitespace);
-    inputCorpus <- tm_map(inputCorpus, content_transformer(tolower));
-    inputCorpus[[1]]$content <- removeNumbers(inputCorpus[[1]]$content);
-    
-    
-    # extract only the character vector of the corpus to increase computational speed
-    
-    inputText <- inputCorpus[[1]]$content;
-
+    inputText <- tolower(inputText);
+    inputText <- gsub("( )+", " ", inputText);
     
     # split sentences (i.e. ".", ",", ";", "!", "?", "\"", " - ") into individual character elements
     
