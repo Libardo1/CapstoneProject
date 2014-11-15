@@ -2,19 +2,19 @@
 library(tm);
 library(plyr);
 
-source("D:/R/simpleTokenization.R");
-source("D:/R/multiGrams.R");
+source("simpleTokenization.R");
+source("multiGrams.R");
 
 
 # load the data sets
 
-newsSource <- DirSource(directory="final/en_US/", pattern="news", mode="text", ignore.case=FALSE);
+newsSource <- DirSource(directory="en_US/", pattern="news", mode="text", ignore.case=FALSE);
 newsCorpus <- VCorpus(newsSource);
 
-# blogsSource <- DirSource(directory="final/en_US/", pattern="blogs", mode="text", ignore.case=FALSE);
+# blogsSource <- DirSource(directory="en_US/", pattern="blogs", mode="text", ignore.case=FALSE);
 # blogsCorpus <- VCorpus(blogsSource);
 # 
-# twitterSource <- DirSource(directory="final/en_US/", pattern="twitter", mode="text", ignore.case=FALSE);
+# twitterSource <- DirSource(directory="en_US/", pattern="twitter", mode="text", ignore.case=FALSE);
 # twitterCorpus <- VCorpus(twitterSource);
 
 rm(newsSource);
@@ -59,6 +59,15 @@ frequentWords <- wordsTable[ wordsTable >= 5];
 
 plot(frequentWords[1:1000]/length(wordsList), log="y", xlab="words ordered by frequency", ylab="frequency", xaxt="n", 
      cex=0.5, main="relative frequencies of the 1000 most frequent words in a set of newspaper articles", pch=20);
+
+
+# convert the frequent words to a data frame and save it to the hard drive
+
+frequentWords <- data.frame(word=rownames(frequentWords), freq=frequentWords, stringsAsFactors=FALSE);
+rownames(frequentWords) <- NULL;
+save(frequentWords, file="frequentWords.RData");
+
+
 
 # calculate the relative cumulative sum of the word frequencies
 
@@ -112,8 +121,10 @@ threeGramsPasted <- threeGramsPasted[ order(threeGramsPasted, decreasing=TRUE) ]
 
 # convert them back to data frames
 
-twoGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(twoGramsPasted), split=" ")), ncol=2, byrow=TRUE));
-threeGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(threeGramsPasted), split=" ")), ncol=3, byrow=TRUE));
+twoGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(twoGramsPasted), split=" ")), ncol=2, byrow=TRUE), 
+                            stringsAsFactors=FALSE);
+threeGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(threeGramsPasted), split=" ")), ncol=3, byrow=TRUE), 
+                              stringsAsFactors=FALSE);
 colnames(twoGramsDistr) <- colnames(twoGrams);
 colnames(threeGramsDistr) <- colnames(threeGrams);
 

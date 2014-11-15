@@ -1,18 +1,18 @@
 
 library(tm)
 
-source("D:/R/simpleTokenization.R")
+source("simpleTokenization.R")
 
 
 # load the data sets
 
-newsSource <- DirSource(directory="final/en_US/", pattern="news", mode="text", ignore.case=FALSE);
+newsSource <- DirSource(directory="en_US/", pattern="news", mode="text", ignore.case=FALSE);
 newsCorpus <- VCorpus(newsSource);
 
-blogsSource <- DirSource(directory="final/en_US/", pattern="blogs", mode="text", ignore.case=FALSE);
+blogsSource <- DirSource(directory="en_US/", pattern="blogs", mode="text", ignore.case=FALSE);
 blogsCorpus <- VCorpus(blogsSource);
 
-twitterSource <- DirSource(directory="final/en_US/", pattern="twitter", mode="text", ignore.case=FALSE);
+twitterSource <- DirSource(directory="en_US/", pattern="twitter", mode="text", ignore.case=FALSE);
 twitterCorpus <- VCorpus(twitterSource);
 
 rm(newsSource, blogsSource, twitterSource);
