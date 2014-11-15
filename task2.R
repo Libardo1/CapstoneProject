@@ -7,8 +7,8 @@ source("multiGrams.R");
 
 # define global variables for the maximum number of corpus elements and extracted strings to be used per data source
 
-MAX_CORPUS_ELEMENTS <- 500000;
-MAX_STRINGS <- 1000000;
+MAX_CORPUS_ELEMENTS <- 250000;
+MAX_STRINGS <- 500000;
 
 # define global variables for the minimum frequency of words and n-grams to be taken into account
 
@@ -17,12 +17,12 @@ MIN_2GRAM_FREQUENCY <- 2;
 MIN_3GRAM_FREQUENCY <- 2;
 MIN_4GRAM_FREQUENCY <- 2;
 
-# initialize variables to hold the distribution of n-grams and words
+# initialize variables to hold the lists of n-grams and words
 
-frequentWords <- NULL;
-twoGramsDistr <- NULL;
-threeGramsDistr <- NULL;
-fourGramsDistr <- NULL;
+wordsList <- NULL;
+twoGramsPasted <- NULL;
+threeGramsPasted <- NULL;
+fourGramsPasted <- NULL;
 
 
 # list the input files
@@ -31,8 +31,8 @@ filesList <- list.files(path="en_US/", pattern=".txt");
 
 # filter some of the data sets...
 
-filesList <- filesList[ -grep("blog", filesList)];
-filesList <- filesList[ -grep("news", filesList)];
+# filesList <- filesList[ -grep("blog", filesList)];
+# filesList <- filesList[ -grep("twitter", filesList)];
 
 
 # loop through the data sets
@@ -40,6 +40,7 @@ filesList <- filesList[ -grep("news", filesList)];
 for (i in 1:length(filesList))
 {
     cat(paste("processing data set", i, "of", length(filesList), "\n"));
+    cat(paste("current data set:", filesList[i], "\n"));
     
     # load the data sets
     
@@ -47,10 +48,11 @@ for (i in 1:length(filesList))
     dataCorpus <- VCorpus(dataSource);
     rm(dataSource);
     
-    # tokenize the input corpus, limiting the number of input elements to 500'000
+    # tokenize the input corpus, limiting the number of input elements to MAX_CORPUS_ELEMENTS
     
     cat("tokenizing text...\n");
     tokenizedText <- simpleTokenization(dataCorpus, maxElements=MAX_CORPUS_ELEMENTS);
+    rm(dataCorpus);
     
     # limit the number of strings from the tokenized text (elements correspond roughly to (partial) sentences)
     
@@ -73,37 +75,8 @@ for (i in 1:length(filesList))
     # get a list of words (to be used for guessing words e.g. at the start of a sentence or after words
     # with no frequent combination)
     
-    cat("determine the distribution of the words...\n");
-    wordsList <- unlist( strsplit(tokenizedText, split=" ") );
-    wordsList <- wordsList[ wordsList != "" ];
-    
-    wordsTable <- table(wordsList);
-    wordsTable <- sort(wordsTable, decreasing=TRUE);
-    tempFrequentWords <- wordsTable[ wordsTable >= MIN_WORD_FREQUENCY];
-    
-    # # plot the distribution of the most frequent words
-    
-    # plot(tempFrequentWords[1:1000]/length(wordsList), log="y", xlab="words ordered by frequency", ylab="frequency", xaxt="n", 
-    #     cex=0.5, main="relative frequencies of the 1000 most frequent words in a set of newspaper articles", pch=20);
-    
-    
-    # convert the frequent words to a data frame and save it to the hard drive
-    
-    tempFrequentWords <- data.frame(word=rownames(tempFrequentWords), freq=tempFrequentWords, stringsAsFactors=FALSE);
-    rownames(tempFrequentWords) <- NULL;    
-    
-    
-    # calculate the relative cumulative sum of the word frequencies
-    
-    cumulativeSum <- cumsum(wordsTable);
-    cumulativeSum <- cumulativeSum/length(wordsList);
-    
-    # calculate the number of words that cover 50 and 90 % of all the words
-    
-    cat("50% of words covered by number of words: \n");
-    cat(paste(match(TRUE, cumulativeSum >= 0.5), "\n"));
-    cat("90% of words covered by number of words: \n");
-    cat(paste(match(TRUE, cumulativeSum >= 0.9), "\n"));
+    tempWordsList <- unlist( strsplit(tokenizedText, split=" ") );
+    tempWordsList <- tempWordsList[ tempWordsList != "" ];
 
     
     # find ngrams...
@@ -115,80 +88,115 @@ for (i in 1:length(filesList))
     cat("find 4-grams\n");
     fourGrams <- multiGrams(tokenizedText,4);
     
-    cat("number of 2-grams:\n");
-    cat(paste(nrow(twoGrams), "\n"));
-    cat("number of 3-grams:\n");
-    cat(paste(nrow(threeGrams), "\n"));
-    cat("number of 4-grams:\n");
-    cat(paste(nrow(fourGrams), "\n"));
+    rm(tokenizedText);
+
     
-    # # filter only ngrams beginning with a "frequent word"
-    # 
-    # twoGramsFiltered <- twoGrams[ twoGrams[,1] %in% rownames(tempFrequentWords), ];
-    # threeGramsFiltered <- threeGrams[ threeGrams[,1] %in% rownames(tempFrequentWords), ];
+    # to count the number of occurrences more efficiently, paste the multiple words together (vectorization)...
     
-    # count the number of occurrences. to do so, first paste the multiple words together for faster counting...
+    tempTwoGramsPasted <- paste(twoGrams[,1], twoGrams[,2], sep=" ");
+    tempThreeGramsPasted <- paste(threeGrams[,1], threeGrams[,2], threeGrams[,3], sep=" ");
+    tempFourGramsPasted <- paste(fourGrams[,1], fourGrams[,2], fourGrams[,3], fourGrams[,4], sep=" ");
     
-    twoGramsPasted <- paste(twoGrams[,1], twoGrams[,2], sep=" ");
-    threeGramsPasted <- paste(threeGrams[,1], threeGrams[,2], threeGrams[,3], sep=" ");
-    fourGramsPasted <- paste(fourGrams[,1], fourGrams[,2], fourGrams[,3], fourGrams[,4], sep=" ");
-    
-    cat("find the distribution of 2-grams\n");
-    twoGramsPasted <- table(twoGramsPasted);
-    cat("find the distribution of 3-grams\n");
-    threeGramsPasted <- table(threeGramsPasted);
-    cat("find the distribution of 4-grams\n");
-    fourGramsPasted <- table(fourGramsPasted);
-    
-    # filter only multigrams with a minimum number of occurrences, e.g. at least twice
-    
-    cat("filter and order the n-grams...\n");
-    twoGramsPasted <- twoGramsPasted[ twoGramsPasted >= MIN_2GRAM_FREQUENCY ];
-    threeGramsPasted <- threeGramsPasted[ threeGramsPasted >= MIN_3GRAM_FREQUENCY ];
-    fourGramsPasted <- fourGramsPasted[ fourGramsPasted >= MIN_4GRAM_FREQUENCY ];
-    
-    # order the multigrams by frequency
-    
-    twoGramsPasted <- twoGramsPasted[ order(twoGramsPasted, decreasing=TRUE) ];
-    threeGramsPasted <- threeGramsPasted[ order(threeGramsPasted, decreasing=TRUE) ];
-    fourGramsPasted <- fourGramsPasted[ order(fourGramsPasted, decreasing=TRUE) ];
-    
-    # convert them back to data frames
-    
-    cat("convert the n-grams to data frames\n");
-    tempTwoGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(twoGramsPasted), split=" ")), ncol=2, byrow=TRUE), 
-                                stringsAsFactors=FALSE);
-    tempThreeGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(threeGramsPasted), split=" ")), ncol=3, byrow=TRUE), 
-                                  stringsAsFactors=FALSE);
-    tempFourGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(fourGramsPasted), split=" ")), ncol=4, byrow=TRUE), 
-                                 stringsAsFactors=FALSE);
-    colnames(tempTwoGramsDistr) <- colnames(twoGrams);
-    colnames(tempThreeGramsDistr) <- colnames(threeGrams);
-    colnames(tempFourGramsDistr) <- colnames(fourGrams);
-    
-    tempTwoGramsDistr$freq <- twoGramsPasted;
-    tempThreeGramsDistr$freq <- threeGramsPasted;
-    tempFourGramsDistr$freq <- fourGramsPasted;
+    rm(twoGrams, threeGrams, fourGrams);
     
     # write the temporary data in the final variables
     
-    if (length(frequentWords) == 0)
+    if (length(wordsList) == 0)
     {
-        frequentWords <- tempFrequentWords;
-        twoGramsDistr <- tempTwoGramsDistr;
-        threeGramsDistr <- tempThreeGramsDistr;
-        fourGramsDistr <- tempFourGramsDistr;
+        wordsList <- tempWordsList;
+        twoGramsPasted <- tempTwoGramsPasted;
+        threeGramsPasted <- tempThreeGramsPasted;
+        fourGramsPasted <- tempFourGramsPasted;
     }
     else
     {
-        frequentWords <- rbind(frequentWords, tempFrequentWords);
-        twoGramsDistr <- rbind(twoGramsDistr, tempTwoGramsDistr);
-        threeGramsDistr <- rbind(threeGramsDistr, tempThreeGramsDistr);
-        fourGramsDistr <- rbind(fourGramsDistr, tempFourGramsDistr);
+        wordsList <- c(wordsList, tempWordsList);
+        twoGramsPasted <- rbind(twoGramsPasted, tempTwoGramsPasted);
+        threeGramsPasted <- rbind(threeGramsPasted, tempThreeGramsPasted);
+        fourGramsPasted <- rbind(fourGramsPasted, tempFourGramsPasted);
     }
-    
 }
-rm(i);
+rm(i, tempWordsList, tempTwoGramsPasted, tempThreeGramsPasted, tempFourGramsPasted);
+
+
+# find the distribution of the most frequent words...
+
+cat("find the distribution of single words...\n");
+wordsTable <- table(wordsList);
+wordsTable <- sort(wordsTable, decreasing=TRUE);
+frequentWords <- wordsTable[ wordsTable >= MIN_WORD_FREQUENCY];
+
+# # plot the distribution of the most frequent words
+
+# plot(frequentWords[1:1000]/length(wordsList), log="y", xlab="words ordered by frequency", ylab="frequency", xaxt="n", 
+#     cex=0.5, main="relative frequencies of the 1000 most frequent words in a set of newspaper articles", pch=20);
+
+
+# convert the frequent words to a data frame and save it to the hard drive
+
+frequentWords <- data.frame(word=rownames(frequentWords), freq=frequentWords, stringsAsFactors=FALSE);
+rownames(frequentWords) <- NULL;    
+
+
+# calculate the relative cumulative sum of the word frequencies
+
+cumulativeSum <- cumsum(wordsTable);
+cumulativeSum <- cumulativeSum/length(wordsList);
+rm(wordsList);
+
+# calculate the number of words that cover 50 and 90 % of all the words
+
+cat("50% of words covered by number of words: \n");
+cat(paste(match(TRUE, cumulativeSum >= 0.5), "\n"));
+cat("90% of words covered by number of words: \n");
+cat(paste(match(TRUE, cumulativeSum >= 0.9), "\n"));
+
+
+# determine the distribution of the n-grams
+
+cat("number of 2-grams:\n");
+cat(paste(length(twoGramsPasted), "\n"));
+cat("number of 3-grams:\n");
+cat(paste(length(threeGramsPasted), "\n"));
+cat("number of 4-grams:\n");
+cat(paste(length(fourGramsPasted), "\n"));
+
+cat("find the distribution of 2-grams\n");
+twoGramsPasted <- table(twoGramsPasted);
+cat("find the distribution of 3-grams\n");
+threeGramsPasted <- table(threeGramsPasted);
+cat("find the distribution of 4-grams\n");
+fourGramsPasted <- table(fourGramsPasted);
+
+# filter only multigrams with a minimum number of occurrences, e.g. at least twice
+
+cat("filter and order the n-grams...\n");
+twoGramsPasted <- twoGramsPasted[ twoGramsPasted >= MIN_2GRAM_FREQUENCY ];
+threeGramsPasted <- threeGramsPasted[ threeGramsPasted >= MIN_3GRAM_FREQUENCY ];
+fourGramsPasted <- fourGramsPasted[ fourGramsPasted >= MIN_4GRAM_FREQUENCY ];
+
+# order the multigrams by frequency
+
+twoGramsPasted <- twoGramsPasted[ order(twoGramsPasted, decreasing=TRUE) ];
+threeGramsPasted <- threeGramsPasted[ order(threeGramsPasted, decreasing=TRUE) ];
+fourGramsPasted <- fourGramsPasted[ order(fourGramsPasted, decreasing=TRUE) ];
+
+# convert them back to data frames
+
+cat("convert the n-grams to data frames\n");
+twoGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(twoGramsPasted), split=" ")), ncol=2, byrow=TRUE), 
+                                stringsAsFactors=FALSE);
+threeGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(threeGramsPasted), split=" ")), ncol=3, byrow=TRUE), 
+                                  stringsAsFactors=FALSE);
+fourGramsDistr <- data.frame(matrix(unlist(strsplit(rownames(fourGramsPasted), split=" ")), ncol=4, byrow=TRUE), 
+                                 stringsAsFactors=FALSE);
+colnames(twoGramsDistr) <- paste("word", 1:2, sep="");
+colnames(threeGramsDistr) <- paste("word", 1:3, sep="");
+colnames(fourGramsDistr) <- paste("word", 1:4, sep="");
+
+twoGramsDistr$freq <- twoGramsPasted;
+threeGramsDistr$freq <- threeGramsPasted;
+fourGramsDistr$freq <- fourGramsPasted;
 
 
 # order the combined data by frequency
@@ -198,7 +206,6 @@ frequentWords <- frequentWords[ order(frequentWords$freq, decreasing=TRUE), ];
 twoGramsDistr <- twoGramsDistr[ order(twoGramsDistr$freq, decreasing=TRUE), ];
 threeGramsDistr <- threeGramsDistr[ order(threeGramsDistr$freq, decreasing=TRUE), ];
 fourGramsDistr <- fourGramsDistr[ order(fourGramsDistr$freq, decreasing=TRUE), ];
-
 
 
 # # plot the distribution of the most frequent two- and threegrams
