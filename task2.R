@@ -19,10 +19,10 @@ MIN_4GRAM_FREQUENCY <- 2;
 
 # initialize variables to hold the lists of n-grams and words
 
-wordsList <- NULL;
-twoGramsPasted <- NULL;
-threeGramsPasted <- NULL;
-fourGramsPasted <- NULL;
+wordsList <- as.character(NULL);
+twoGramsPasted <- as.character(NULL);
+threeGramsPasted <- as.character(NULL);
+fourGramsPasted <- as.character(NULL);
 
 
 # list the input files
@@ -101,20 +101,10 @@ for (i in 1:length(filesList))
     
     # write the temporary data in the final variables
     
-    if (length(wordsList) == 0)
-    {
-        wordsList <- tempWordsList;
-        twoGramsPasted <- tempTwoGramsPasted;
-        threeGramsPasted <- tempThreeGramsPasted;
-        fourGramsPasted <- tempFourGramsPasted;
-    }
-    else
-    {
-        wordsList <- c(wordsList, tempWordsList);
-        twoGramsPasted <- rbind(twoGramsPasted, tempTwoGramsPasted);
-        threeGramsPasted <- rbind(threeGramsPasted, tempThreeGramsPasted);
-        fourGramsPasted <- rbind(fourGramsPasted, tempFourGramsPasted);
-    }
+    wordsList <- c(wordsList, tempWordsList);
+    twoGramsPasted <- c(twoGramsPasted, tempTwoGramsPasted);
+    threeGramsPasted <- c(threeGramsPasted, tempThreeGramsPasted);
+    fourGramsPasted <- c(fourGramsPasted, tempFourGramsPasted);
 }
 rm(i, tempWordsList, tempTwoGramsPasted, tempThreeGramsPasted, tempFourGramsPasted);
 
@@ -124,18 +114,20 @@ rm(i, tempWordsList, tempTwoGramsPasted, tempThreeGramsPasted, tempFourGramsPast
 cat("find the distribution of single words...\n");
 wordsTable <- table(wordsList);
 wordsTable <- sort(wordsTable, decreasing=TRUE);
-frequentWords <- wordsTable[ wordsTable >= MIN_WORD_FREQUENCY];
+
+# convert the words table to a data frame and save it to the hard drive
+
+wordsTable <- data.frame(word=rownames(wordsTable), freq=wordsTable, stringsAsFactors=FALSE);
+rownames(wordsTable) <- NULL;    
+save(wordsTable, file="fullWordsTable.RData", compress="xz");
+
+
+frequentWords <- wordsTable[ wordsTable$freq >= MIN_WORD_FREQUENCY, ];
 
 # # plot the distribution of the most frequent words
 
 # plot(frequentWords[1:1000]/length(wordsList), log="y", xlab="words ordered by frequency", ylab="frequency", xaxt="n", 
 #     cex=0.5, main="relative frequencies of the 1000 most frequent words in a set of newspaper articles", pch=20);
-
-
-# convert the frequent words to a data frame and save it to the hard drive
-
-frequentWords <- data.frame(word=rownames(frequentWords), freq=frequentWords, stringsAsFactors=FALSE);
-rownames(frequentWords) <- NULL;    
 
 
 # calculate the relative cumulative sum of the word frequencies
@@ -167,6 +159,12 @@ cat("find the distribution of 3-grams\n");
 threeGramsPasted <- table(threeGramsPasted);
 cat("find the distribution of 4-grams\n");
 fourGramsPasted <- table(fourGramsPasted);
+
+# save the full distributions as pasted strings on the hard drive
+
+save(twoGramsPasted, file="fullTwoGramsDistr.RData", compress="xz");
+save(threeGramsPasted, file="fullThreeGramsDistr.RData", compress="xz");
+save(fourGramsPasted, file="fullFourGramsDistr.RData", compress="xz");
 
 # filter only multigrams with a minimum number of occurrences, e.g. at least twice
 
@@ -224,7 +222,6 @@ fourGramsDistr <- fourGramsDistr[ order(fourGramsDistr$freq, decreasing=TRUE), ]
 
 
 # save the two- and threeGrams-distributions on the hard disk for faster loading in other R-scripts
-# currently less than 2 MB each. 
 
 save(frequentWords, file="frequentWords.RData");
 save(twoGramsDistr, file="twoGramsDistr.RData");
