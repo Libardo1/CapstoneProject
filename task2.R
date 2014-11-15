@@ -160,6 +160,12 @@ threeGramsPasted <- table(threeGramsPasted);
 cat("find the distribution of 4-grams\n");
 fourGramsPasted <- table(fourGramsPasted);
 
+# order the multigrams by frequency
+
+twoGramsPasted <- twoGramsPasted[ order(twoGramsPasted, decreasing=TRUE) ];
+threeGramsPasted <- threeGramsPasted[ order(threeGramsPasted, decreasing=TRUE) ];
+fourGramsPasted <- fourGramsPasted[ order(fourGramsPasted, decreasing=TRUE) ];
+
 # save the full distributions as pasted strings on the hard drive
 
 save(twoGramsPasted, file="fullTwoGramsDistr.RData", compress="xz");
@@ -172,12 +178,6 @@ cat("filter and order the n-grams...\n");
 twoGramsPasted <- twoGramsPasted[ twoGramsPasted >= MIN_2GRAM_FREQUENCY ];
 threeGramsPasted <- threeGramsPasted[ threeGramsPasted >= MIN_3GRAM_FREQUENCY ];
 fourGramsPasted <- fourGramsPasted[ fourGramsPasted >= MIN_4GRAM_FREQUENCY ];
-
-# order the multigrams by frequency
-
-twoGramsPasted <- twoGramsPasted[ order(twoGramsPasted, decreasing=TRUE) ];
-threeGramsPasted <- threeGramsPasted[ order(threeGramsPasted, decreasing=TRUE) ];
-fourGramsPasted <- fourGramsPasted[ order(fourGramsPasted, decreasing=TRUE) ];
 
 # convert them back to data frames
 
