@@ -2,6 +2,8 @@
 *.RData
 *.Rproj
 *.Rhistory
+*.html
+*cache*
 
 
 # Windows image file caches
