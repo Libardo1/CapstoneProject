@@ -3,11 +3,12 @@
 library(shiny)
 
 shinyUI(pageWithSidebar(
-    headerPanel("Example plot"),
+    headerPanel("word prediction"),
     sidebarPanel(
-        sliderInput('mu', 'Guess at the mean',value = 70, min = 62, max = 74, step = 0.05,)
+        textInput("inputString", "Incomplete phrase",value = ""),
+        submitButton("Submit")
     ),
     mainPanel(
-        plotOutput('newHist')
+        verbatimTextOutput("prediction")
     )
 ))
