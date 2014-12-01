@@ -103,7 +103,7 @@ predictNextWord <- function(inputString)
         {
             predictedWord <- fourGramsDistr$word4[tempIndex];
             matchFound <- TRUE;
-            cat("matching 4-gram found\n");
+            cat("matching 4-gram found:\n");
         }
         rm(tempString, tempIndex);
     }
@@ -119,7 +119,7 @@ predictNextWord <- function(inputString)
         {
             predictedWord <- threeGramsDistr$word3[tempIndex];
             matchFound <- TRUE;
-            cat("matching 3-gram found\n");
+            cat("matching 3-gram found:\n");
         }
         rm(tempString, tempIndex);
     }
@@ -135,7 +135,7 @@ predictNextWord <- function(inputString)
         {
             predictedWord <- twoGramsDistr$word2[tempIndex];
             matchFound <- TRUE;
-            cat("matching 2-gram found\n");
+            cat("matching 2-gram found:\n");
         }
         rm(tempString, tempIndex);
     }
@@ -145,7 +145,7 @@ predictNextWord <- function(inputString)
     if (!matchFound)
     {
         predictedWord <- frequentWords$word[1];
-        cat("most frequent word chosen\n");
+        cat("no n-gram found, most frequent word chosen:\n");
     }
     
     return(predictedWord);
@@ -156,7 +156,9 @@ shinyServer(
     function(input, output) {
         output$prediction <- renderPrint({
             temp <- simpleStringTokenization(input$inputString);
-            predictNextWord(temp);
+            temp <- predictNextWord(temp);
+            cat("\n\t");
+            cat(temp);
             })
     }
 )
