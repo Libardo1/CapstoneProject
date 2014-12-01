@@ -1,7 +1,5 @@
 # function to tokenize an input text string
 
-library(tm);
-
 simpleStringTokenization <- function(inputString)
 {
     # remove all weird characters and numbers
@@ -13,6 +11,10 @@ simpleStringTokenization <- function(inputString)
     
     inputString <- tolower(inputString);
     inputString <- gsub("( )+", " ", inputString);
+    
+    # return empty input strings
+    
+    if (nchar(inputString) == 0) return("");
     
     # split sentences (i.e. ".", ",", ";", "!", "?", "\"", " - ") into individual character elements
     
