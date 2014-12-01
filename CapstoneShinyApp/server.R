@@ -59,23 +59,23 @@ simpleStringTokenization <- function(inputString)
 
 # function to predict the next word for a given input character string
 
+# load the 2- and 3-gram dristributions and the distribution of the most frequent single words 
+# (all distributions ordered by decreasing frequency)
+
+load("twoGramsDistr.RData");
+load("threeGramsDistr.RData");
+load("fourGramsDistr.RData");
+load("frequentWords.RData");
+
+# for the case of 3- and 4-grams, paste the first 2 / 3 words together to allow an easier search
+
+threeGramsDistr[, 1] <- paste(threeGramsDistr[, 1], threeGramsDistr[, 2], sep=" ");
+threeGramsDistr <- threeGramsDistr[, c(1,3,4)];
+fourGramsDistr[, 1] <- paste(fourGramsDistr[, 1], fourGramsDistr[, 2], fourGramsDistr[, 3], sep=" ");
+fourGramsDistr <- fourGramsDistr[, c(1,4,5)];
+
 predictNextWord <- function(inputString)
-{
-    # load the 2- and 3-gram dristributions and the distribution of the most frequent single words 
-    # (all distributions ordered by decreasing frequency)
-    
-    load("twoGramsDistr.RData");
-    load("threeGramsDistr.RData");
-    load("fourGramsDistr.RData");
-    load("frequentWords.RData");
-    
-    # for the case of 3- and 4-grams, paste the first 2 / 3 words together to allow an easier search
-    
-    threeGramsDistr[, 1] <- paste(threeGramsDistr[, 1], threeGramsDistr[, 2], sep=" ");
-    threeGramsDistr <- threeGramsDistr[, c(1,3,4)];
-    fourGramsDistr[, 1] <- paste(fourGramsDistr[, 1], fourGramsDistr[, 2], fourGramsDistr[, 3], sep=" ");
-    fourGramsDistr <- fourGramsDistr[, c(1,4,5)];
-    
+{    
     # tokenize the input string
     
     inputString <- simpleStringTokenization(inputString);
