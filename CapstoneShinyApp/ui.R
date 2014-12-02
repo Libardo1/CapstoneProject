@@ -6,7 +6,7 @@ shinyUI(fluidPage(
     titlePanel("Word sequence prediction algorithm"),
     
     fluidRow(
-        p("Please input a sequence of words, e.g. an incomplete sentence, and click the \"Submit\" button to get 
+        p("Please input a sequence of words, e.g. an incomplete sentence, and click the \"Predict\" button to get 
             a prediction for the next word in the sequence.")
     ),
     
