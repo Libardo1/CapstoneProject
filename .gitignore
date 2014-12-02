@@ -4,6 +4,8 @@
 *.Rhistory
 *.html
 *cache*
+FinalProject.md
+*figure*
 
 
 # Windows image file caches
