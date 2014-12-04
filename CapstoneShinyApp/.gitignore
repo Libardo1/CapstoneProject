@@ -4,6 +4,7 @@
 *.Rhistory
 *.html
 *cache*
+shinyapps*
 
 
 # Windows image file caches
